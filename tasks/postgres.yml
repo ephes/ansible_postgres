@@ -1,0 +1,71 @@
+---
+# file: roles/postgres/tasks/postgres.yml
+
+#- name: add postgres repository key
+#  sudo: yes
+#  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+#
+#- name: add postgres repository to sources list
+#  sudo: yes
+#  apt_repository: repo='deb http://apt.postgresql.org/pub/repos/apt/trusty-pgdg stable main' state=present
+
+- name: Generate en_US locale
+  sudo: yes
+  shell: locale-gen en_US en_US.UTF-8
+
+- name: Set the locale, postgres is quite picky about it
+  sudo: yes
+  command: /usr/sbin/update-locale LANG="en_US.UTF-8" LC_ALL="en_US.UTF-8" LANGUAGE="en_US"
+
+- name: install latest postgres packages
+  sudo: yes
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - python-psycopg2
+    - postgresql-9.3
+    - postgresql-contrib-9.3
+    - postgresql-server-dev-all
+  notify:
+    - stop postgres
+
+- name: stop postgres if freshly installed because otherwise restart would fail
+  meta: flush_handlers
+
+- name: add postgres pg_hba.conf config
+  sudo: yes
+  template: src=pg_hba.conf.j2
+            dest=/etc/postgresql/9.3/main/pg_hba.conf
+  notify:
+    - restart postgres
+
+- name: add postgres postgresql.conf config
+  sudo: yes
+  template: src=postgresql.conf.j2
+            dest=/etc/postgresql/9.3/main/postgresql.conf
+  notify:
+    - restart postgres
+
+- name: make sure postgres is running
+  sudo: yes
+  service: name=postgresql state=running
+
+- name: ensure database is created
+  sudo_user: postgres
+  sudo: yes
+  postgresql_db: name={{ database_name }}
+  notify:
+    - restart postgres
+
+- name: ensure user has access to database
+  sudo_user: postgres
+  sudo: yes
+  postgresql_user: db={{ database_name }} name={{ database_name }} password={{ database_name }} priv=ALL
+  notify:
+    - restart postgres
+
+- name: ensure user does not have unnecessary privilege
+  sudo_user: postgres
+  sudo: yes
+  postgresql_user: name={{ database_name }} role_attr_flags=NOSUPERUSER,CREATEDB
+  notify:
+    - restart postgres
