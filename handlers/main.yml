@@ -1,0 +1,10 @@
+---
+# handlers file for roles/postgres
+
+- name: restart postgres
+  service: name=postgresql state=restarted
+  sudo: yes
+
+- name: stop postgres
+  service: name=postgresql state=stopped
+  sudo: yes
