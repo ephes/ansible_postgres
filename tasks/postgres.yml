@@ -1,13 +1,13 @@
 ---
 # file: roles/postgres/tasks/postgres.yml
 
-#- name: add postgres repository key
-#  sudo: yes
-#  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
-#
-#- name: add postgres repository to sources list
-#  sudo: yes
-#  apt_repository: repo='deb http://apt.postgresql.org/pub/repos/apt/trusty-pgdg stable main' state=present
+- name: add postgres repository key
+  sudo: yes
+  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+
+- name: add postgres repository to sources list
+  sudo: yes
+  apt_repository: repo='deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' state=present
 
 - name: Generate en_US locale
   sudo: yes
@@ -22,8 +22,8 @@
   apt: pkg={{ item }} state=latest
   with_items:
     - python-psycopg2
-    - postgresql-9.3
-    - postgresql-contrib-9.3
+    - postgresql-9.4
+    - postgresql-contrib-9.4
     - postgresql-server-dev-all
   notify:
     - stop postgres
@@ -34,14 +34,14 @@
 - name: add postgres pg_hba.conf config
   sudo: yes
   template: src=pg_hba.conf.j2
-            dest=/etc/postgresql/9.3/main/pg_hba.conf
+            dest=/etc/postgresql/9.4/main/pg_hba.conf
   notify:
     - restart postgres
 
 - name: add postgres postgresql.conf config
   sudo: yes
   template: src=postgresql.conf.j2
-            dest=/etc/postgresql/9.3/main/postgresql.conf
+            dest=/etc/postgresql/9.4/main/postgresql.conf
   notify:
     - restart postgres
 
