@@ -1,0 +1,5 @@
+--- 
+
+postgres_dumps_dir: /tmp/pgdumps
+postgres_effective_cache_size: 248MB
+postgres_shared_buffers: 128MB
